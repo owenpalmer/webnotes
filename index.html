@@ -10,9 +10,7 @@
     <div class="theme-switcher">
         <label for="theme-select">Theme:</label>
         <select id="theme-select">
-            <option value="coffee">Coffee</option>
-            <option value="dark">Dark</option>
-            <option value="nature">Nature</option>
+            <!-- Options will be populated dynamically -->
         </select>
     </div>
 
@@ -88,10 +86,30 @@
             localStorage.setItem('preferred-theme', themeName);
         }
 
+        // Populate theme selector with options from themes.json
+        function populateThemeSelector(themes) {
+            const themeSelect = document.getElementById('theme-select');
+            
+            // Clear any existing options
+            themeSelect.innerHTML = '';
+            
+            // Add an option for each theme
+            for (const themeName in themes) {
+                const option = document.createElement('option');
+                option.value = themeName;
+                // Capitalize the first letter of each theme name
+                option.textContent = themeName.charAt(0).toUpperCase() + themeName.slice(1);
+                themeSelect.appendChild(option);
+            }
+        }
+
         // Initialize theme switcher
         async function initThemeSwitcher() {
             const themes = await loadThemes();
             if (!themes) return;
+
+            // Populate the theme selector dropdown
+            populateThemeSelector(themes);
 
             const themeSelect = document.getElementById('theme-select');
             const savedTheme = localStorage.getItem('preferred-theme');
@@ -101,7 +119,10 @@
                 themeSelect.value = savedTheme;
                 applyTheme(savedTheme, themes);
             } else {
-                applyTheme('coffee', themes); // Default theme
+                // Use the first theme as default if no saved preference
+                const defaultTheme = Object.keys(themes)[0];
+                themeSelect.value = defaultTheme;
+                applyTheme(defaultTheme, themes);
             }
 
             // Add event listener for theme changes

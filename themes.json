@@ -46,5 +46,21 @@
     "node-level-2": "#69a188",
     "node-level-3": "#a0c4b5",
     "coffee-stain": "rgba(99, 181, 136, 0.08)"
+  },
+  "anki-dark": {
+    "background": "#1a1512",
+    "card-background": "#2c2420",
+    "graph-background": "#252018",
+    "primary-text": "#e6d5c3",
+    "secondary-text": "#a18869",
+    "tertiary-text": "#b58863",
+    "border": "#b5886333",
+    "shadow": "rgba(0, 0, 0, 0.4)",
+    "light-shadow": "rgba(0, 0, 0, 0.2)",
+    "accent": "#d4b08c",
+    "node-level-1": "#d4b08c",
+    "node-level-2": "#b5886a",
+    "node-level-3": "#8a6548",
+    "coffee-stain": "rgba(181, 136, 99, 0.15)"
   }
 }
