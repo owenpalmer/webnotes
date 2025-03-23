@@ -80,7 +80,7 @@ body {
     stroke-opacity: 0.6;
 }
 
-.legend {
+/* .legend {
     position: absolute;
     top: 1rem;
     right: 1rem;
@@ -103,7 +103,7 @@ body {
     height: 12px;
     border-radius: 50%;
     margin-right: 0.5rem;
-}
+} */
 
 /* Right side - Notes Container */
 .notes-container {
@@ -171,6 +171,10 @@ body {
     border-radius: 50%;
     background: var(--coffee-stain);
     transform: rotate(-15deg);
+}
+
+p {
+    color: var(--primary-text);
 }
 
 h1,h2,h3,h4,h5,h6 {
@@ -290,4 +294,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
         width: calc(100% - 2rem);
         height: calc(50vh - 2rem);
     }
+}
+
+img {
+    max-width: 100%;
+}
+
+iframe {
+    width: 100%;
+    border: none;
 }

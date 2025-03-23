@@ -141,27 +141,33 @@
         const width = document.getElementById('graph').clientWidth;
         const height = document.getElementById('graph').clientHeight;
 
+        // Create the SVG with zoom and pan capabilities
         const svg = d3.select("#graph")
             .append("svg")
             .attr("width", width)
-            .attr("height", height);
+            .attr("height", height)
+            .attr("viewBox", [0, 0, width, height])
+            .attr("style", "max-width: 100%; height: auto;");
+
+        // Add a group for all graph elements that will be transformed during zoom/pan
+        const g = svg.append("g");
 
         // Create the force simulation
         const simulation = d3.forceSimulation(data.nodes)
             .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
-            .force("charge", d3.forceManyBody().strength(-300))
+            .force("charge", d3.forceManyBody().strength(-0))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(50));
+            .force("collision", d3.forceCollide().radius(57));
 
         // Create the links
-        const link = svg.append("g")
+        const link = g.append("g")
             .selectAll("line")
             .data(data.links)
             .join("line")
             .attr("class", "link");
 
         // Create the nodes
-        const node = svg.append("g")
+        const node = g.append("g")
             .selectAll(".node")
             .data(data.nodes)
             .join("g")
@@ -187,6 +193,21 @@
             .text(d => d.label)
             .attr("dy", 30)
             .attr("text-anchor", "middle");
+
+        // Define zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 4]) // Set min/max zoom scale
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        // Apply zoom behavior to SVG
+        svg.call(zoom);
+
+        // Disable default right-click context menu
+        svg.on("contextmenu", function(event) {
+            event.preventDefault();
+        });
 
         // Function to load all note content for a node
         function loadNoteContent(nodeId) {
@@ -293,19 +314,28 @@
                 .attr("transform", d => `translate(${d.x},${d.y})`);
         });
 
-        // Drag functions
+        // Drag functions for nodes (left-click drag)
         function dragstarted(event) {
+            // Only handle left-click drag for nodes
+            if (event.sourceEvent.button !== 0) return;
+            
             if (!event.active) simulation.alphaTarget(0.3).restart();
             event.subject.fx = event.subject.x;
             event.subject.fy = event.subject.y;
         }
 
         function dragged(event) {
+            // Only handle left-click drag for nodes
+            if (event.sourceEvent.button !== 0) return;
+            
             event.subject.fx = event.x;
             event.subject.fy = event.y;
         }
 
         function dragended(event) {
+            // Only handle left-click drag for nodes
+            if (event.sourceEvent.button !== 0) return;
+            
             if (!event.active) simulation.alphaTarget(0);
             event.subject.fx = null;
             event.subject.fy = null;

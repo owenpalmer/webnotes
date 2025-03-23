@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limiting Reactant Simulation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        #canvas {
+            display: block;
+            background-color: #f0f8ff;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div id="controls">
+        <button id="resetBtn">Reset🔄</button>
+        <button id="slowBtn">Slower🐢</button>
+        <button id="normalBtn">Faster🐇</button>
+    </div>
+    
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas to full window size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Particle class
+        class Particle {
+            constructor(type, x, y) {
+                this.type = type; // 'A', 'B', or 'AB'
+                this.x = x;
+                this.y = y;
+                this.radius = type === 'AB' ? 12 : 8;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.mass = type === 'AB' ? 2 : 1;
+                this.bonded = false;
+                this.bondPartner = null;
+                this.bondTime = 0;
+                
+                // Assign colors based on type
+                if (type === 'A') {
+                    this.color = '#FF5733'; // Red-orange
+                } else if (type === 'B') {
+                    this.color = '#3498DB'; // Blue
+                } else if (type === 'AB') {
+                    this.color = '#662D91'; // Purple
+                }
+            }
+            
+            // Update particle position
+            update() {
+                // Apply velocity
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                // Bounce off walls
+                if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                    this.vx *= -1;
+                    // Keep within bounds
+                    this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                }
+                
+                if (this.y < this.radius || this.y > canvas.height - this.radius) {
+                    this.vy *= -1;
+                    // Keep within bounds
+                    this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+                }
+            }
+            
+            // Draw the particle
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                
+                // Add text label
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = `${this.radius}px Arial`;
+                ctx.fillText(this.type, this.x, this.y);
+            }
+        }
+        
+        // Simulation variables
+        let particles = [];
+        let timeStep = 1;
+        const simulationStarted = Date.now();
+        
+        // Initialize particles
+        function initialize() {
+            particles = [];
+            
+            // Create element A particles (more of these)
+            for (let i = 0; i < 20; i++) {
+                const x = Math.random() * (canvas.width - 100) + 50;
+                const y = Math.random() * (canvas.height - 100) + 50;
+                particles.push(new Particle('A', x, y));
+            }
+            
+            // Create element B particles (fewer, making it the limiting reactant)
+            for (let i = 0; i < 10; i++) {
+                const x = Math.random() * (canvas.width - 100) + 50;
+                const y = Math.random() * (canvas.height - 100) + 50;
+                particles.push(new Particle('B', x, y));
+            }
+        }
+        
+        // Check for collisions between particles
+        function checkCollisions() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p1 = particles[i];
+                    const p2 = particles[j];
+                    
+                    // Skip if either particle is already part of a compound
+                    if (p1.type === 'AB' || p2.type === 'AB') continue;
+                    
+                    // Check if A and B are colliding (for reaction)
+                    if ((p1.type === 'A' && p2.type === 'B') || (p1.type === 'B' && p2.type === 'A')) {
+                        const dx = p2.x - p1.x;
+                        const dy = p2.y - p1.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // If particles are touching, create reaction
+                        if (distance < p1.radius + p2.radius) {
+                            // Create new AB compound at the average position
+                            const newX = (p1.x + p2.x) / 2;
+                            const newY = (p1.y + p2.y) / 2;
+                            
+                            // Add compound to particles array
+                            particles.push(new Particle('AB', newX, newY));
+                            
+                            // Remove the original particles (mark for removal)
+                            p1.toRemove = true;
+                            p2.toRemove = true;
+                        }
+                    }
+                }
+            }
+            
+            // Remove particles marked for removal
+            particles = particles.filter(p => !p.toRemove);
+        }
+        
+        // Handle physical collisions (elastic collision)
+        function handlePhysicalCollisions() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p1 = particles[i];
+                    const p2 = particles[j];
+                    
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // If particles are touching
+                    if (distance < p1.radius + p2.radius) {
+                        // Calculate collision normal
+                        const nx = dx / distance;
+                        const ny = dy / distance;
+                        
+                        // Calculate relative velocity
+                        const vx = p2.vx - p1.vx;
+                        const vy = p2.vy - p1.vy;
+                        
+                        // Calculate velocity along normal
+                        const velocityAlongNormal = vx * nx + vy * ny;
+                        
+                        // If particles are moving away from each other, skip
+                        if (velocityAlongNormal > 0) continue;
+                        
+                        // Calculate impulse scalar (simplified elastic collision)
+                        const impulseScalar = -2 * velocityAlongNormal / (p1.mass + p2.mass);
+                        
+                        // Apply impulse
+                        p1.vx -= impulseScalar * p2.mass * nx;
+                        p1.vy -= impulseScalar * p2.mass * ny;
+                        p2.vx += impulseScalar * p1.mass * nx;
+                        p2.vy += impulseScalar * p1.mass * ny;
+                        
+                        // Separate particles to prevent sticking
+                        const overlap = p1.radius + p2.radius - distance;
+                        const separationX = nx * overlap * 0.5;
+                        const separationY = ny * overlap * 0.5;
+                        
+                        p1.x -= separationX;
+                        p1.y -= separationY;
+                        p2.x += separationX;
+                        p2.y += separationY;
+                    }
+                }
+            }
+        }
+        
+        // Animation loop
+        function animate() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Update all particles
+            for (const particle of particles) {
+                particle.update();
+            }
+            
+            // Check for chemical reactions
+            checkCollisions();
+            
+            // Handle physical collisions
+            handlePhysicalCollisions();
+            
+            // Draw all particles
+            for (const particle of particles) {
+                particle.draw();
+            }
+            
+            // Request next frame
+            requestAnimationFrame(animate);
+        }
+        
+        // Initialize simulation
+        initialize();
+        
+        // Start animation
+        animate();
+        
+        // Event listeners
+        document.getElementById('resetBtn').addEventListener('click', initialize);
+        
+        document.getElementById('slowBtn').addEventListener('click', function() {
+            timeStep = 0.5;
+            for (const particle of particles) {
+                particle.vx *= 0.5;
+                particle.vy *= 0.5;
+            }
+        });
+        
+        document.getElementById('normalBtn').addEventListener('click', function() {
+            timeStep = 1;
+            for (const particle of particles) {
+                particle.vx *= 2;
+                particle.vy *= 2;
+            }
+        });
+        
+        // Resize handler
+        window.addEventListener('resize', function() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
