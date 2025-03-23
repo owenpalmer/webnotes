@@ -1,0 +1,197 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f5f0e8;
+    font-family: 'Georgia', serif;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+/* Left side - Concept Map */
+.concept-map {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(149, 127, 107, 0.2),
+        0 2px 6px rgba(149, 127, 107, 0.1);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    margin-right: 1rem;
+    min-height: 700px;
+}
+
+.concept-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+}
+
+#graph {
+    width: 100%;
+    height: calc(100% - 60px);
+    background: #fcfaf7;
+    border-radius: 8px;
+    border: 1px solid #e6d5c3;
+}
+
+.node circle {
+    stroke: #fff;
+    stroke-width: 2px;
+}
+
+.node text {
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    fill: #6b4423;
+}
+
+.link {
+    stroke: #e6d5c3;
+    stroke-opacity: 0.6;
+}
+
+.legend {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: white;
+    border: 1px solid #e6d5c3;
+    border-radius: 8px;
+    padding: 0.5rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin: 0.25rem 0;
+    font-size: 0.8rem;
+    color: #6b4423;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+/* Right side - Note Card */
+.anki-card {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(149, 127, 107, 0.2),
+        0 2px 6px rgba(149, 127, 107, 0.1);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    margin-left: 1rem;
+    min-height: 700px;
+}
+
+.card-content {
+    position: relative;
+    z-index: 2;
+}
+
+.coffee-stain {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(181, 136, 99, 0.08);
+    transform: rotate(-15deg);
+}
+
+.card-header {
+    color: #6b4423;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e6d5c3;
+    padding-bottom: 0.5rem;
+}
+
+.graph-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+canvas {
+    background-color: #fcfaf7;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(149, 127, 107, 0.1);
+}
+
+.controls {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+input[type="range"] {
+    width: 200px;
+    height: 6px;
+    -webkit-appearance: none;
+    background: #e6d5c3;
+    border-radius: 3px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    background: #6b4423;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s ease-in-out;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #8b5e3c;
+}
+
+.hint {
+    color: #a18869;
+    font-size: 0.95rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.footer {
+    color: #8b7355;
+    font-size: 0.9rem;
+    text-align: right;
+    margin-top: 2rem;
+    font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .concept-map,
+    .anki-card {
+        margin: 1rem 0;
+        width: 100%;
+    }
+}

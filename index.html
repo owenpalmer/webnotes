@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Combined Concept Map and Notes</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Left side - Concept Map -->
+        <div class="concept-map">
+            <div class="coffee-stain"></div>
+            <div class="concept-content">
+                <div class="card-header">Mathematics Concept Map</div>
+                <div id="graph"></div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #8b5e3c"></div>
+                        <span>Foundations</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #a18869"></div>
+                        <span>Core Concepts</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #c4b5a0"></div>
+                        <span>Advanced Topics</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side - Note Card -->
+        <div class="anki-card">
+            <div class="coffee-stain"></div>
+            <div class="card-content">
+                <div class="card-header">Select a concept to view notes</div>
+                <div class="hint">Click on any node in the concept map to view its notes</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure for mathematical concepts
+        const data = {
+            nodes: [
+                // Foundations
+                {id: "numbers", label: "Numbers & Counting", level: 0, description: "The foundation of mathematics, starting with natural numbers and extending to complex numbers."},
+                {id: "operations", label: "Basic Operations", level: 0, description: "Fundamental mathematical operations that form the basis of arithmetic and algebra."},
+                {id: "patterns", label: "Patterns & Relations", level: 0, description: "Recognition and analysis of mathematical patterns and relationships."},
+                
+                // Core Branches
+                {id: "algebra", label: "Algebra", level: 1, description: "Study of mathematical structures and their properties using variables and equations."},
+                {id: "geometry", label: "Geometry", level: 1, description: "Study of shapes, sizes, positions, and dimensions of things."},
+                {id: "analysis", label: "Analysis", level: 1, description: "Study of continuous mathematical change, including calculus and its foundations."},
+                
+                // Advanced Topics
+                {id: "topology", label: "Topology", level: 2, description: "Study of geometric properties that remain unchanged under continuous deformations."},
+                {id: "logic", label: "Logic & Foundations", level: 2, description: "Study of valid reasoning and mathematical foundations."},
+                {id: "probability", label: "Probability & Statistics", level: 2, description: "Study of random phenomena and data analysis."},
+                {id: "numberTheory", label: "Number Theory", level: 2, description: "Study of integers and their properties."},
+                
+                // Applications
+                {id: "dataScience", label: "Data Science", level: 2, description: "Application of mathematics to data analysis and machine learning."},
+                {id: "cryptography", label: "Cryptography", level: 2, description: "Mathematical techniques for secure communication."},
+                {id: "quantum", label: "Quantum Computing", level: 2, description: "Mathematical foundations of quantum computation."}
+            ],
+            links: [
+                // Foundation connections
+                {source: "numbers", target: "algebra"},
+                {source: "numbers", target: "numberTheory"},
+                {source: "operations", target: "algebra"},
+                {source: "operations", target: "analysis"},
+                {source: "patterns", target: "algebra"},
+                {source: "patterns", target: "analysis"},
+                
+                // Core branch connections
+                {source: "algebra", target: "topology"},
+                {source: "algebra", target: "analysis"},
+                {source: "algebra", target: "cryptography"},
+                {source: "geometry", target: "topology"},
+                {source: "geometry", target: "analysis"},
+                {source: "analysis", target: "topology"},
+                {source: "analysis", target: "probability"},
+                
+                // Advanced topic connections
+                {source: "probability", target: "dataScience"},
+                {source: "numberTheory", target: "cryptography"},
+                {source: "topology", target: "quantum"},
+                {source: "analysis", target: "quantum"}
+            ]
+        };
+
+        // Set up the SVG
+        const width = document.getElementById('graph').clientWidth;
+        const height = document.getElementById('graph').clientHeight;
+
+        const svg = d3.select("#graph")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Create the force simulation
+        const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(50));
+
+        // Create the links
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(data.links)
+            .join("line")
+            .attr("class", "link");
+
+        // Create the nodes
+        const node = svg.append("g")
+            .selectAll(".node")
+            .data(data.nodes)
+            .join("g")
+            .attr("class", "node")
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended));
+
+        // Add circles to nodes
+        node.append("circle")
+            .attr("r", d => 20 - d.level * 4)
+            .style("fill", d => {
+                switch(d.level) {
+                    case 0: return "#8b5e3c";
+                    case 1: return "#a18869";
+                    case 2: return "#c4b5a0";
+                }
+            });
+
+        // Add labels to nodes
+        node.append("text")
+            .text(d => d.label)
+            .attr("dy", 30)
+            .attr("text-anchor", "middle");
+
+        // Function to load note content
+        function loadNoteContent(nodeId) {
+            const notePath = `notes/${nodeId}/index.html`;
+            
+            fetch(notePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Note not found: ${notePath}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    const cardContent = document.querySelector('.card-content');
+                    // Find the node data to get the label
+                    const nodeData = data.nodes.find(n => n.id === nodeId);
+                    
+                    // Update the content with the header and fetched HTML
+                    cardContent.innerHTML = `
+                        <div class="card-header">${nodeData.label}</div>
+                        ${html}
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error loading note:', error);
+                    const cardContent = document.querySelector('.card-content');
+                    cardContent.innerHTML = `
+                        <div class="card-header">Note Not Found</div>
+                        <div class="hint">The note for this concept is not available yet.</div>
+                    `;
+                });
+        }
+
+        // Add click event to nodes
+        node.on("click", function(event, d) {
+            // Highlight the selected node
+            node.selectAll("circle").style("stroke", "#fff");
+            d3.select(this).select("circle").style("stroke", "#ff9900").style("stroke-width", "3px");
+            
+            // Load the corresponding note content
+            loadNoteContent(d.id);
+        });
+
+        // Node info popup for hover
+        const nodeInfo = document.createElement('div');
+        nodeInfo.className = 'node-info';
+        nodeInfo.innerHTML = '<h3></h3><p></p>';
+        document.body.appendChild(nodeInfo);
+
+        node.on("mouseover", function(event, d) {
+            nodeInfo.style.display = "block";
+            nodeInfo.style.left = (event.pageX + 10) + "px";
+            nodeInfo.style.top = (event.pageY + 10) + "px";
+            nodeInfo.querySelector('h3').textContent = d.label;
+            nodeInfo.querySelector('p').textContent = d.description;
+        })
+        .on("mouseout", function() {
+            nodeInfo.style.display = "none";
+        });
+
+        // Update positions on each tick
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node
+                .attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+    </script>
+</body>
+</html>
