@@ -6,6 +6,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 </head>
 <body>
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+        <label for="theme-select">Theme:</label>
+        <select id="theme-select">
+            <option value="coffee">Coffee</option>
+            <option value="dark">Dark</option>
+            <option value="nature">Nature</option>
+        </select>
+    </div>
+
     <div class="container">
         <!-- Left side - Concept Map -->
         <div class="concept-map">
@@ -16,15 +26,15 @@
                 <div id="graph"></div>
                 <!-- <div class="legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #8b5e3c"></div>
+                        <div class="legend-color" style="background: var(--node-level-1)"></div>
                         <span>Foundations</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #a18869"></div>
+                        <div class="legend-color" style="background: var(--node-level-2)"></div>
                         <span>Core Concepts</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: #c4b5a0"></div>
+                        <div class="legend-color" style="background: var(--node-level-3)"></div>
                         <span>Advanced Topics</span>
                     </div>
                 </div> -->
@@ -43,6 +53,66 @@
             </div>
         </div>
     </div>
+
+    <!-- Theme Switcher Script -->
+    <script>
+        // Theme management
+        async function loadThemes() {
+            try {
+                const response = await fetch('themes.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load themes');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Error loading themes:', error);
+                return null;
+            }
+        }
+
+        function applyTheme(themeName, themes) {
+            if (!themes || !themes[themeName]) {
+                console.error('Theme not found:', themeName);
+                return;
+            }
+
+            const theme = themes[themeName];
+            const root = document.documentElement;
+
+            // Apply each color from the theme to CSS variables
+            for (const [key, value] of Object.entries(theme)) {
+                root.style.setProperty(`--${key}`, value);
+            }
+
+            // Save the theme preference
+            localStorage.setItem('preferred-theme', themeName);
+        }
+
+        // Initialize theme switcher
+        async function initThemeSwitcher() {
+            const themes = await loadThemes();
+            if (!themes) return;
+
+            const themeSelect = document.getElementById('theme-select');
+            const savedTheme = localStorage.getItem('preferred-theme');
+
+            // Set the dropdown to the saved theme or default
+            if (savedTheme && themes[savedTheme]) {
+                themeSelect.value = savedTheme;
+                applyTheme(savedTheme, themes);
+            } else {
+                applyTheme('coffee', themes); // Default theme
+            }
+
+            // Add event listener for theme changes
+            themeSelect.addEventListener('change', function() {
+                applyTheme(this.value, themes);
+            });
+        }
+
+        // Initialize theme switcher when the page loads
+        document.addEventListener('DOMContentLoaded', initThemeSwitcher);
+    </script>
 
     <script src="graph.js"></script>
     <script>
@@ -85,9 +155,9 @@
             .attr("r", d => 20 - d.level * 4)
             .style("fill", d => {
                 switch(d.level) {
-                    case 0: return "#8b5e3c";
-                    case 1: return "#a18869";
-                    case 2: return "#c4b5a0";
+                    case 0: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-1');
+                    case 1: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-2');
+                    case 2: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-3');
                 }
             });
 
@@ -184,28 +254,11 @@
         node.on("click", function(event, d) {
             // Highlight the selected node
             node.selectAll("circle").style("stroke", "#fff");
-            d3.select(this).select("circle").style("stroke", "#ff9900").style("stroke-width", "3px");
+            d3.select(this).select("circle").style("stroke", getComputedStyle(document.documentElement).getPropertyValue('--accent')).style("stroke-width", "3px");
             
             // Load the corresponding note content
             loadNoteContent(d.id);
         });
-
-        // Node info popup for hover
-        // const nodeInfo = document.createElement('div');
-        // nodeInfo.className = 'node-info';
-        // nodeInfo.innerHTML = '<h3></h3><p></p>';
-        // document.body.appendChild(nodeInfo);
-
-        // node.on("mouseover", function(event, d) {
-        //     nodeInfo.style.display = "block";
-        //     nodeInfo.style.left = (event.pageX + 10) + "px";
-        //     nodeInfo.style.top = (event.pageY + 10) + "px";
-        //     nodeInfo.querySelector('h3').textContent = d.label;
-        //     nodeInfo.querySelector('p').textContent = d.description;
-        // })
-        // .on("mouseout", function() {
-        //     nodeInfo.style.display = "none";
-        // });
 
         // Update positions on each tick
         simulation.on("tick", () => {
@@ -236,6 +289,18 @@
             event.subject.fx = null;
             event.subject.fy = null;
         }
+
+        // Update node colors when theme changes
+        document.getElementById('theme-select').addEventListener('change', function() {
+            node.selectAll("circle")
+                .style("fill", d => {
+                    switch(d.level) {
+                        case 0: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-1');
+                        case 1: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-2');
+                        case 2: return getComputedStyle(document.documentElement).getPropertyValue('--node-level-3');
+                    }
+                });
+        });
     </script>
 </body>
 </html>

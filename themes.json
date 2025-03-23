@@ -1,0 +1,50 @@
+{
+  "coffee": {
+    "background": "#f5f0e8",
+    "card-background": "#ffffff",
+    "graph-background": "#fcfaf7",
+    "primary-text": "#6b4423",
+    "secondary-text": "#a18869",
+    "tertiary-text": "#8b7355",
+    "border": "#e6d5c3",
+    "shadow": "rgba(149, 127, 107, 0.2)",
+    "light-shadow": "rgba(149, 127, 107, 0.1)",
+    "accent": "#ff9900",
+    "node-level-1": "#8b5e3c",
+    "node-level-2": "#a18869",
+    "node-level-3": "#c4b5a0",
+    "coffee-stain": "rgba(181, 136, 99, 0.08)"
+  },
+  "dark": {
+    "background": "#1e1e1e",
+    "card-background": "#2d2d2d",
+    "graph-background": "#252525",
+    "primary-text": "#e0e0e0",
+    "secondary-text": "#b0b0b0",
+    "tertiary-text": "#909090",
+    "border": "#444444",
+    "shadow": "rgba(0, 0, 0, 0.4)",
+    "light-shadow": "rgba(0, 0, 0, 0.2)",
+    "accent": "#61dafb",
+    "node-level-1": "#61dafb",
+    "node-level-2": "#4fa8d2",
+    "node-level-3": "#3d7ea8",
+    "coffee-stain": "rgba(97, 218, 251, 0.08)"
+  },
+  "nature": {
+    "background": "#f0f5e8",
+    "card-background": "#ffffff",
+    "graph-background": "#f7fcf7",
+    "primary-text": "#2e5522",
+    "secondary-text": "#5a7d4e",
+    "tertiary-text": "#7d9e71",
+    "border": "#c3e6c3",
+    "shadow": "rgba(107, 149, 107, 0.2)",
+    "light-shadow": "rgba(107, 149, 107, 0.1)",
+    "accent": "#ff6b6b",
+    "node-level-1": "#3c8b5e",
+    "node-level-2": "#69a188",
+    "node-level-3": "#a0c4b5",
+    "coffee-stain": "rgba(99, 181, 136, 0.08)"
+  }
+}
